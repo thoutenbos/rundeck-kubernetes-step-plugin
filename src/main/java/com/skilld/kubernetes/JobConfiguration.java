@@ -45,6 +45,10 @@ public class JobConfiguration {
 	private Map<String, String> nodeSelector;
 	private Integer parallelism;
 	private Map<String, String> labels;
+	private String persistentVolumeName;
+	private String persistentVolumeMountPath;
+	private String secretName;
+	private String secretMountPath;
 
 	/* Getters */
 	public String getName() {
@@ -95,6 +99,14 @@ public class JobConfiguration {
 		return labels;
 	}
 
+	public String getPersistentVolumeName() { return persistentVolumeName; }
+
+	public String getPersistentVolumeMountPath() { return persistentVolumeMountPath; }
+
+	public String getSecretName() { return secretName; }
+
+	public String getSecretMountPath() { return secretMountPath; }
+
 	/* Setters */
 	public void setName(String _name) {
 		name = _name;
@@ -144,12 +156,26 @@ public class JobConfiguration {
 		labels = _labels;
 	}
 
-	private List<String> buildInput(String _input, Map<String,String> _options){
+	public void setPersistentVolume(String _persistentVolumeName, String _persistentVolumeMountPath, Map<String, String> _options) {
+		persistentVolumeName = buildOption(_persistentVolumeName, _options);
+		persistentVolumeMountPath = buildOption(_persistentVolumeMountPath, _options);
+	}
+
+	public void setSecret(String _secretName, String _secretMountPath, Map<String, String> _options) {
+		secretName = buildOption(_secretName, _options);
+		secretMountPath = buildOption(_secretMountPath, _options);
+	}
+
+	private String buildOption(String _input, Map<String, String> _options) {
 		for (Map.Entry<String, String> option : _options.entrySet()){
 			_input = _input.replace("${" + option.getKey() + "}", option.getValue());
 		}
+		return _input;
+	}
+
+	private List<String> buildInput(String _input, Map<String,String> _options){
 		List<String> input = new ArrayList<String>();
-		Matcher inputParts = Pattern.compile("(\"(?:.(?!(?<!\\\\)\"))*.?\"|'(?:.(?!(?<!\\\\)'))*.?'|\\S+)").matcher(_input);
+		Matcher inputParts = Pattern.compile("(\"(?:.(?!(?<!\\\\)\"))*.?\"|'(?:.(?!(?<!\\\\)'))*.?'|\\S+)").matcher(buildOption(_input, _options));
 		while(inputParts.find()) {
 			input.add(inputParts.group(1));
 		}

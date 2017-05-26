@@ -26,6 +26,9 @@ import com.skilld.kubernetes.JobConfiguration;
 
 import io.fabric8.kubernetes.api.model.Job;
 import io.fabric8.kubernetes.api.model.Container;
+import io.fabric8.kubernetes.api.model.VolumeMount;
+
+import java.util.List;
 
 public class JobBuilder {
 	public static Job build(JobConfiguration configuration) {
@@ -83,12 +86,60 @@ public class JobBuilder {
 		}
 
 		Container container = jobBuilder.buildSpec().getTemplate().getSpec().getContainers().get(0);
+		List<VolumeMount> volumeMountList = container.getVolumeMounts();
 		if(null != configuration.getCommand()) {
 			container.setCommand(configuration.getCommand());
 		}
 		if(null != configuration.getArguments()) {
 			container.setArgs(configuration.getArguments());
 		}
+		if(null != configuration.getPersistentVolumeName() && null != configuration.getPersistentVolumeMountPath()) {
+			volumeMountList.add(
+				new VolumeMount(
+					configuration.getPersistentVolumeMountPath(),
+					configuration.getPersistentVolumeName(),
+					Boolean.FALSE,
+					null
+				)
+			);
+
+			jobBuilder
+				.editSpec()
+					.editTemplate()
+						.editSpec()
+							.addNewVolume()
+								.withName(configuration.getPersistentVolumeName())
+								.withNewPersistentVolumeClaim(configuration.getPersistentVolumeName(), false)
+							.endVolume()
+						.endSpec()
+					.endTemplate()
+				.endSpec();
+		}
+		if(null != configuration.getSecretName() && null != configuration.getSecretMountPath()) {
+			volumeMountList.add(
+				new VolumeMount(
+					configuration.getSecretMountPath(),
+					configuration.getSecretName(),
+					Boolean.TRUE,
+					null
+				)
+			);
+
+			jobBuilder
+				.editSpec()
+					.editTemplate()
+						.editSpec()
+							.addNewVolume()
+								.withName(configuration.getSecretName())
+								.withNewSecret()
+									.withSecretName(configuration.getSecretName())
+								.endSecret()
+							.endVolume()
+						.endSpec()
+					.endTemplate()
+				.endSpec();
+		}
+		container.setVolumeMounts(volumeMountList);
 		jobBuilder
 			.editSpec()
 				.editTemplate()

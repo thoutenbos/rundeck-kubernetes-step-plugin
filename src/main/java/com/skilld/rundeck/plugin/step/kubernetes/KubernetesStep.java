@@ -75,6 +75,8 @@ public class KubernetesStep implements StepPlugin, Describable {
 	public static final String RESTART_POLICY = "restartPolicy";
 	public static final String COMPLETIONS = "completions";
 	public static final String PARALLELISM = "parallelism";
+	public static final String PERSISTENTVOLUME = "persistentVolume";
+	public static final String SECRET = "secret";
 
 	private KubernetesClient client = null;
 	private com.skilld.kubernetes.Job job = null;
@@ -105,6 +107,8 @@ public class KubernetesStep implements StepPlugin, Describable {
 		.property(PropertyUtil.select(RESTART_POLICY, "Restart policy", "The restart policy to apply to the job", true, "Never", Arrays.asList("Never", "OnFailure")))
 		.property(PropertyUtil.integer(COMPLETIONS, "Completions", "Number of pods to wait for success exit before considering the job complete", true, "1"))
 		.property(PropertyUtil.integer(PARALLELISM, "Parallelism", "Number of pods running at any instant", true, "1"))
+		.property(PropertyUtil.string(PERSISTENTVOLUME, "Persistent Volume", "The name of the PVC to use in this job in format <name>;<mountpath>", false, null))
+		.property(PropertyUtil.string(SECRET, "Secret", "The name of the kubernetes secret in format <name>;<mountpath>", false, null))
 		.build();
 
 	public Description getDescription() {
@@ -143,6 +147,24 @@ public class KubernetesStep implements StepPlugin, Describable {
 			}
 			if(null != configuration.get("activeDeadlineSeconds")){
 				jobConfiguration.setActiveDeadlineSeconds(Long.valueOf(configuration.get("activeDeadlineSeconds").toString()));
+			}
+			if(null != configuration.get(PERSISTENTVOLUME)) {
+				try {
+					String persistentVolumeArray[] = configuration.get(PERSISTENTVOLUME).toString().split("\\s*;\\s*");
+					jobConfiguration.setPersistentVolume(persistentVolumeArray[0], persistentVolumeArray[1], context.getDataContext().get("option"));
+				}
+				catch (ArrayIndexOutOfBoundsException e) {
+					logger.error("Invalid format for " + PERSISTENTVOLUME, e);
+				}
+			}
+			if(null != configuration.get(SECRET)) {
+				try {
+					String secretVolumeArray[] = configuration.get(SECRET).toString().split("\\s*;\\s*");
+					jobConfiguration.setSecret(secretVolumeArray[0], secretVolumeArray[1], context.getDataContext().get("option"));
+				}
+				catch (ArrayIndexOutOfBoundsException e) {
+					logger.error("Invalid format for " + SECRET, e);
+				}
 			}
 			job = new com.skilld.kubernetes.Job(jobConfiguration);
 
