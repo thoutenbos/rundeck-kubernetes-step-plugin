@@ -43,7 +43,7 @@ import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import static io.fabric8.kubernetes.client.Watcher.Action.ERROR;
-import io.fabric8.kubernetes.api.model.Job;
+import io.fabric8.kubernetes.api.model.extensions.Job;
 import io.fabric8.kubernetes.api.model.Pod;
 
 import java.util.concurrent.CountDownLatch;

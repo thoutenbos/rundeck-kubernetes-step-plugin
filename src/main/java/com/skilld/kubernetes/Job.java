@@ -24,24 +24,24 @@ package com.skilld.kubernetes;
 import com.skilld.kubernetes.JobConfiguration;
 import com.skilld.kubernetes.JobBuilder;
 
-import io.fabric8.kubernetes.api.model.JobStatus;
-import io.fabric8.kubernetes.api.model.JobCondition;
+import io.fabric8.kubernetes.api.model.extensions.JobStatus;
+import io.fabric8.kubernetes.api.model.extensions.JobCondition;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodList;
 
 public class Job {
-	private io.fabric8.kubernetes.api.model.Job job = null;
+	private io.fabric8.kubernetes.api.model.extensions.Job job = null;
 	private JobCondition jobCondition = null;
 
 	public Job (JobConfiguration jobConfiguration){
 		job = JobBuilder.build(jobConfiguration);
 	}
 
-	public io.fabric8.kubernetes.api.model.Job getJobResource() {
+	public io.fabric8.kubernetes.api.model.extensions.Job getJobResource() {
 		return job;
 	}
 
-	public Boolean isComplete(io.fabric8.kubernetes.api.model.Job _job) {
+	public Boolean isComplete(io.fabric8.kubernetes.api.model.extensions.Job _job) {
 		String type = null;
 		for (JobCondition condition : _job.getStatus().getConditions()) {
 			type = condition.getType();
