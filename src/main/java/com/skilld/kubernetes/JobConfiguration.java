@@ -22,6 +22,8 @@
 package com.skilld.kubernetes;
 
 import io.fabric8.kubernetes.api.model.LocalObjectReference;
+import io.fabric8.kubernetes.api.model.Quantity;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Arrays;
@@ -49,6 +51,7 @@ public class JobConfiguration {
 	private String persistentVolumeMountPath;
 	private String secretName;
 	private String secretMountPath;
+	private Map<String, Quantity> resourceRequests;
 
 	/* Getters */
 	public String getName() {
@@ -107,6 +110,8 @@ public class JobConfiguration {
 
 	public String getSecretMountPath() { return secretMountPath; }
 
+	public Map<String, Quantity> getResourceRequests() { return resourceRequests; }
+
 	/* Setters */
 	public void setName(String _name) {
 		name = _name;
@@ -164,6 +169,10 @@ public class JobConfiguration {
 	public void setSecret(String _secretName, String _secretMountPath, Map<String, String> _options) {
 		secretName = buildOption(_secretName, _options);
 		secretMountPath = buildOption(_secretMountPath, _options);
+	}
+
+	public void setResourceRequests(Map<String, Quantity> reqMap) {
+		resourceRequests = reqMap;
 	}
 
 	private String buildOption(String _input, Map<String, String> _options) {

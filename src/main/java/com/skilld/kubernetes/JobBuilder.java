@@ -24,11 +24,12 @@ package com.skilld.kubernetes;
 
 import com.skilld.kubernetes.JobConfiguration;
 
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.extensions.Job;
-import io.fabric8.kubernetes.api.model.Container;
-import io.fabric8.kubernetes.api.model.VolumeMount;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class JobBuilder {
 	public static Job build(JobConfiguration configuration) {
@@ -140,6 +141,15 @@ public class JobBuilder {
 				.endSpec();
 		}
 		container.setVolumeMounts(volumeMountList);
+
+		if(null != configuration.getResourceRequests()) {
+			container.setResources(
+				new ResourceRequirementsBuilder()
+					.withRequests(configuration.getResourceRequests())
+					.build()
+			);
+		}
+
 		jobBuilder
 			.editSpec()
 				.editTemplate()
