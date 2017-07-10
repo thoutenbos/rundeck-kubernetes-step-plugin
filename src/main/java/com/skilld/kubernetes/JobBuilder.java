@@ -27,6 +27,7 @@ import com.skilld.kubernetes.JobConfiguration;
 import io.fabric8.kubernetes.api.model.Job;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.VolumeMount;
+import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder;
 
 import java.util.List;
 
@@ -140,6 +141,15 @@ public class JobBuilder {
 				.endSpec();
 		}
 		container.setVolumeMounts(volumeMountList);
+
+		if(null != configuration.getResourceRequests()) {
+			container.setResources(
+				new ResourceRequirementsBuilder()
+					.withRequests(configuration.getResourceRequests())
+					.build()
+			);
+		}
+
 		jobBuilder
 			.editSpec()
 				.editTemplate()

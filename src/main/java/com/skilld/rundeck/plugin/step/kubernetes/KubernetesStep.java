@@ -35,6 +35,7 @@ import com.dtolabs.rundeck.core.execution.workflow.steps.StepException;
 import com.dtolabs.rundeck.plugins.step.PluginStepContext;
 import com.dtolabs.rundeck.plugins.PluginLogger;
 
+import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
@@ -77,6 +78,7 @@ public class KubernetesStep implements StepPlugin, Describable {
 	public static final String PARALLELISM = "parallelism";
 	public static final String PERSISTENTVOLUME = "persistentVolume";
 	public static final String SECRET = "secret";
+	public static final String RESOURCEREQUESTS = "resourceRequests";
 
 	private KubernetesClient client = null;
 	private com.skilld.kubernetes.Job job = null;
@@ -109,6 +111,7 @@ public class KubernetesStep implements StepPlugin, Describable {
 		.property(PropertyUtil.integer(PARALLELISM, "Parallelism", "Number of pods running at any instant", true, "1"))
 		.property(PropertyUtil.string(PERSISTENTVOLUME, "Persistent Volume", "The name of the PVC to use in this job in format <name>;<mountpath>", false, null))
 		.property(PropertyUtil.string(SECRET, "Secret", "The name of the kubernetes secret in format <name>;<mountpath>", false, null))
+		.property(PropertyUtil.string(RESOURCEREQUESTS, "Resource Requests", "Request resources in format cpu:4 memory:24Gi", false, null))
 		.build();
 
 	public Description getDescription() {
@@ -164,6 +167,19 @@ public class KubernetesStep implements StepPlugin, Describable {
 				}
 				catch (ArrayIndexOutOfBoundsException e) {
 					logger.error("Invalid format for " + SECRET, e);
+				}
+			}
+			if(null != configuration.get(RESOURCEREQUESTS) && !"".equals(configuration.get(RESOURCEREQUESTS).toString())) {
+				try {
+					Map<String, Quantity> reqMap = new HashMap<>();
+					for (String resourceRequest: configuration.get(RESOURCEREQUESTS).toString().split(" ")) {
+						String resourceRequestArray[] = resourceRequest.split(":");
+						reqMap.put(resourceRequestArray[0], new Quantity(resourceRequestArray[1]));
+					}
+					jobConfiguration.setResourceRequests(reqMap);
+				}
+				catch (ArrayIndexOutOfBoundsException e) {
+					logger.error("Invalid format for " + RESOURCEREQUESTS, e);
 				}
 			}
 			job = new com.skilld.kubernetes.Job(jobConfiguration);
