@@ -250,7 +250,7 @@ public class KubernetesStep implements StepPlugin, Describable {
 	private void Terminate() {
 		jobWatch.close();
 		podWatch.close();
-		job.delete(client);
+		//job.delete(client);
 		client.close();
 	}
 }
